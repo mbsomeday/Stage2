@@ -18,9 +18,10 @@ CLOUD = {
     'weights_path': {
 
     },
+    'weights_save_path': r'/content/weights_path',
     'ECPD': {
-        'base_dir': r'D:\chrom_download\grouped2_ECP',
-
+        'base_dir': r'/content/data',
+        'txt_dir': 'dataset_txt'
     }
 }
 

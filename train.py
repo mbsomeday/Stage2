@@ -3,13 +3,15 @@ from torchvision import transforms
 import argparse
 from torch.utils.data import DataLoader
 import os
+from tqdm import tqdm
+
 
 from cv_models import DEVICE, LOCAL, vgg
 import dataset
 
 def train(running_on, model, model_name, dataset_name,train_dataset, train_loader, val_dataset, val_loader):
 
-
+    model = model.to(DEVICE)
     EPOCHS = 100
     BEST_ACCURACY = -10.0
     WEIGHT_SAVE_PATH = running_on['weights_save_path']
@@ -21,11 +23,11 @@ def train(running_on, model, model_name, dataset_name,train_dataset, train_loade
     print('Total index samples:', len(train_loader))
 
     for epoch in range(EPOCHS):
-        print('-' * 30 + 'begin EPOCH ' + str(epoch) + '-' * 30)
+        print('-' * 30 + 'begin EPOCH ' + str(epoch + 1) + '-' * 30)
         model.train()
         running_loss = 0.0
 
-        for batch, data in enumerate(train_loader):
+        for batch, data in enumerate(tqdm(train_loader)):
             images, labels, _ = data
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
@@ -40,18 +42,17 @@ def train(running_on, model, model_name, dataset_name,train_dataset, train_loade
 
             running_loss += loss.item()
 
-            if (batch + 1) % 2 == 0:
-                print('Training Epoch: %d, batch_idx:%5d, loss: %.8f' % (
-                epoch + 1, batch + 1, running_loss / images.shape[0]))
+            if (batch + 1) % 100 == 0:
+                print('Training Epoch: %d, batch_idx:%5d, loss: %.8f' % (epoch + 1, batch + 1, running_loss / images.shape[0]))
                 running_loss = 0.0
 
-                break
+                # break
         # validation after finish One EPOCH training
         model.eval()
         val_loss = 0.0
         num_correct = 0
         with torch.no_grad():
-            for data in val_loader:
+            for data in tqdm(val_loader):
                 images, labels, _ = data
                 images = images.to(DEVICE)
                 labels = labels.to(DEVICE)
@@ -71,7 +72,11 @@ def train(running_on, model, model_name, dataset_name,train_dataset, train_loade
 
             # 删除已经有的文件,只保留n+1个模型
             num_saved = 2
-            all_weights = os.listdir(model_save_dir)
+            all_weights_temp = os.listdir(model_save_dir)
+            all_weights = []
+            for weights in all_weights_temp:
+                if weights.endswith('.pth'):
+                    all_weights.append(weights)
             if len(all_weights) > num_saved:
                 sorted = []
                 for weight in all_weights:
@@ -113,8 +118,6 @@ if __name__ == '__main__':
           train_loader=train_loader,
           val_dataset=val_dataset,
           val_loader=val_loader
-
-
           )
 
 
