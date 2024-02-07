@@ -1,67 +1,61 @@
-# Deal with .seq format for video sequence
-# Author: Kaij
-# The .seq file is combined with images,
-# so I split the file into several images with the image prefix
-# "\xFF\xD8\xFF\xE0\x00\x10\x4A\x46\x49\x46".
-
-import os.path
-import fnmatch
-import shutil
-
-
-def open_save(file, savepath):
-    # read .seq file, and save the images into the savepath
-
-    f = open(file, 'rb+')
-    string = f.read().decode('latin-1')
-    # PNG
-    # splitstring = "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a"
-    splitstring = "\xFF\xD8\xFF\xE0\x00\x10\x4A\x46\x49\x46"
-    # split .seq file into segment with the image prefix
-    strlist = string.split(splitstring)
-    f.close()
-    count = 0
-    # delete the image folder path if it exists
-    if os.path.exists(savepath):
-        shutil.rmtree(savepath)
-    # create the image folder path
-    if not os.path.exists(savepath):
-        os.mkdir(savepath)
-    # deal with file segment, every segment is an image except the first one
-    for img in strlist:
-        filename = str(count) + '.jpg'
-        filenamewithpath = os.path.join(savepath, filename)
-        # abandon the first one, which is filled with .seq header
-        if count > 0:
-            i = open(filenamewithpath, 'wb+')
-            i.write(splitstring.encode('latin-1'))
-            i.write(img.encode('latin-1'))
-            i.close()
-        count += 1
-
-
-if __name__ == "__main__":
-    file = r'D:\chrom_download\CUHK\set00-occ.seq'
-    save_path = r'D:\chrom_download\CUHK\images'
-
-    open_save(file, save_path)
-
-    seq_dir = r'D:\chrom_download\CUHK\seq'
-    image_dir = r'D:\chrom_download\CUHK\images'
-
-    seq_list = os.listdir(seq_dir)
-
-    for seq in seq_list:
-        dir_name = seq.split('.')[0]
-
-        dir_path = os.path.join(image_dir, dir_name)
-        if not os.path.exists(dir_path):
-            os.mkdir(dir_path)
-
-        open_save(os.path.join(seq_dir, seq), dir_path)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -------------------------------- TODO 数据集的分割 --------------------------------
+# import random
+# import os
+
+# dataset_dir = r'D:\chrom_download\grouped2_ECP'
+# pedestrian_dirName = 'pedestrian'
+# background_dirName = 'background'
+#
+# dataseTxt_dirName = 'dataset_txt'
+#
+# ped_num = len(os.listdir(os.path.join(dataset_dir, pedestrian_dirName)))
+# bg_num = len(os.listdir(os.path.join(dataset_dir, background_dirName)))
+#
+# ped_indices = list(range(ped_num))
+#
+# def wriTxt(indices, txtName, dirName, dir_code, image_list):
+#     print('-' * 40 + txtName + '-' * 40)
+#     txt_path = os.path.join(dataset_dir, dataseTxt_dirName, txtName)
+#     with open(txt_path, 'a') as f:
+#         for idx in indices:
+#             cur_ped = os.path.join(dirName, image_list[idx])
+#             print('Current Wrinting:', cur_ped)
+#             msg = cur_ped + ' ' + dirName + ' ' + str(dir_code) + '\n'
+#             f.write(msg)
+#
+# def split_oneCls(dirName, dir_code):
+#     example_num = len(os.listdir(os.path.join(dataset_dir, dirName)))
+#     indices = list(range(example_num))
+#
+#     # 打乱列表
+#     random.seed(13)
+#     random.shuffle(indices)
+#
+#     train_num = int(example_num * 0.6)
+#     test_num = int(example_num * 0.2)
+#     val_num = int(example_num * 0.2)
+#
+#     image_list = os.listdir(os.path.join(dataset_dir, dirName))
+#
+#     wriTxt(indices[: train_num], 'train.txt', dirName, dir_code, image_list)
+#     wriTxt(indices[train_num: (train_num+test_num)], 'test.txt', dirName, dir_code, image_list)
+#     wriTxt(indices[(train_num+test_num): (train_num+test_num+val_num)], 'val.txt', dirName, dir_code, image_list)
 
 
 
