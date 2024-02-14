@@ -20,7 +20,6 @@ def get_image_transform(mode):
         ]),
         transforms.Compose([
             transforms.Resize([224, 224]),  # [h, w])
-
             transforms.RandomHorizontalFlip(p=0.5),  # 水平翻转
             transforms.ToTensor()
         ]),
@@ -38,11 +37,11 @@ def get_image_transform(mode):
 
 
 class MyDataset(Dataset):
-    def __init__(self, running_on, txt_name, transformer_mode=None, multinput=False):
+    def __init__(self, running_on, dataset_name, txt_name, transformer_mode=None, multinput=False):
 
         super(MyDataset).__init__()
-        self.base_dir = running_on['ECPD']['base_dir']
-        self.txt_dir = os.path.join(self.base_dir, running_on['ECPD']['txt_dir'])
+        self.base_dir = running_on[dataset_name]['base_dir']
+        self.txt_dir = os.path.join(self.base_dir, 'dataset_txt')
         self.txt_name = txt_name
         self.multinput = multinput
         self.transformer_mode = -1 if multinput else transformer_mode
@@ -87,7 +86,16 @@ class MyDataset(Dataset):
 
 
 
+if __name__ == '__main__':
+    val_dataset = MyDataset(running_on=LOCAL, dataset_name='D3',
+                            txt_name='val.txt', transformer_mode=0, multinput=False
+                            )
+    val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
+    for img, label, image_name in val_loader:
+        print(label)
+        print(img.shape)
+        break
 
 
 
