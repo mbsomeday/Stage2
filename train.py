@@ -42,10 +42,10 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
             running_loss += loss.item()
 
-            # if (batch + 1) % 100 == 0:
-            #     print('Training Epoch: %d, batch_idx:%5d, loss: %.8f' % (
-            #     epoch + 1, batch + 1, running_loss / images.shape[0]))
-            #     running_loss = 0.0
+            if (batch + 1) % 100 == 0:
+                print('Training Epoch: %d, batch_idx:%5d, loss: %.8f' % (
+                epoch + 1, batch + 1, running_loss / images.shape[0]))
+                running_loss = 0.0
 
 
             break
