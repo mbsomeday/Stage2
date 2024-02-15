@@ -86,15 +86,72 @@ class MyDataset(Dataset):
 
 
 
+class DiversityDataset(Dataset):
+    def __init__(self, running_on, dataset_name_list, txt_name, transformer_mode=None):
+
+        super(DiversityDataset).__init__()
+        self.base_dir = running_on['dataset_base_dir']
+        self.dataset_dir_list = []
+        # 获取所有数据集的base_dir
+        for ds_name in dataset_name_list:
+            self.dataset_dir_list.append(running_on[ds_name]['base_dir'])
+
+        self.txt_name = txt_name
+        self.transformer_mode = transformer_mode
+        self.image_transformer = get_image_transform(self.transformer_mode)
+
+        # 先存到temp中，这一步不可省
+        temp = []
+        for ds_dir in self.dataset_dir_list:
+            txt_path = os.path.join(ds_dir, 'dataset_txt', txt_name)
+            with open(txt_path, 'r') as f:
+                temp.append(f.readlines())
+
+        self.example_list = []
+        for idx, big_split in enumerate(temp):
+            cur_dataset_name = dataset_name_list[idx]
+            for item in big_split:
+                msg = cur_dataset_name + ' ' + item
+                self.example_list.append(msg)
+
+        images = []
+        labels = []
+        for line in self.example_list:
+            line = line.strip()
+            word = line.split()
+            image_path = os.path.join(word[0], word[1])
+            # word_splits = word[0].split('\\')
+            images.append(image_path)
+            labels.append(word[-1])
+
+        self.images = images
+        self.labels = labels
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, item):
+        image_name = self.images[item]
+        label = self.labels[item]
+        label = np.array(label).astype(np.int64)
+        img = Image.open(os.path.join(self.base_dir, image_name))  # PIL image shape:（C, W, H）
+        # 利用image对图像大小重新设置, Image.ANTIALIAS为高质量的
+        # image = image.resize(size, Image.ANTIALIAS)
+        img = self.image_transformer(img)
+        return img, label, image_name
+
+
+
+
+
 if __name__ == '__main__':
-    val_dataset = MyDataset(running_on=LOCAL, dataset_name='D3',
-                            txt_name='val.txt', transformer_mode=0, multinput=False
-                            )
+    val_dataset = DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D4_BDD100K'], txt_name='test.txt', transformer_mode=0)
     val_loader = DataLoader(val_dataset, batch_size=4, shuffle=False)
 
     for img, label, image_name in val_loader:
         print(label)
         print(img.shape)
+        print(image_name)
         break
 
 

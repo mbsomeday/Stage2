@@ -6,7 +6,7 @@ from sklearn.metrics import confusion_matrix
 import os
 from tqdm import tqdm
 
-from cv_models import DEVICE, LOCAL, vgg
+from cv_models import DEVICE, LOCAL, vgg, CLOUD
 import dataset
 
 
@@ -47,8 +47,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
                 epoch + 1, batch + 1, running_loss / images.shape[0]))
                 running_loss = 0.0
 
-
-            break
+            # break
         # validation after finish One EPOCH training
         model.eval()
         val_loss = 0.0
@@ -63,7 +62,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
                 _, pred = torch.max(out, 1)
                 num_correct += (pred == labels).sum()
                 val_loss += loss.item()
-                break
+                # break
 
             val_accuracy = num_correct / len(val_dataset)
             print('Val Loss:{:.6f}, accuracy:{:.10f}'.format(val_loss, val_accuracy))
@@ -103,32 +102,51 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
 
 if __name__ == '__main__':
-    BATCH_SIZE = 4
+    BATCH_SIZE = 64
     running_on = LOCAL
     model = vgg.vgg16()
-    # weights_path = r'D:\chrom_download\vggonECPD-050-0.97701919.pth'
+    # weights_path = r'D:\my_phd\Model_Weights\Stage2\D1_ECPDaytime\vgg-ECPDaytime-050-0.97701919.pth'
     # model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
 
-    train_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='train.txt', transformer_mode=0)
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    # TODO 获取baseline的代码
+    # train_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='train.txt', transformer_mode=0)
+    # train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    #
+    # val_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='val.txt', transformer_mode=0)
+    # val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    #
+    # train(running_on=running_on,
+    #       model=model, model_name='vgg',
+    #       dataset_name='D3',
+    #       train_dataset=train_dataset,
+    #       train_loader=train_loader,
+    #       val_dataset=val_dataset,
+    #       val_loader=val_loader
+    #       )
 
-    val_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='val.txt', transformer_mode=0)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    # TODO data diversity的代码
+    train_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='train.txt', transformer_mode=0)
+    train_loader = dataset.DataLoader(train_dataset, batch_size=1, shuffle=True)
+
+    val_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='val.txt', transformer_mode=0)
+    val_loader = dataset.DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     train(running_on=running_on,
           model=model, model_name='vgg',
-          dataset_name='ECPD',
+          dataset_name='CityPersons_ECPNight',
           train_dataset=train_dataset,
           train_loader=train_loader,
           val_dataset=val_dataset,
           val_loader=val_loader
           )
 
-    # test_dataset = dataset.MyDataset(running_on=running_on, txt_name='test.txt', transformer_mode=0)
+
+
+    # test_dataset = dataset.MyDataset(running_on, dataset_name='ECPNight', txt_name='test.txt', transformer_mode=0)
     # test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
     #
     # model.eval()
-
+    #
     # # 预测结果和真实标签
     # y_pred = []
     # y_true = []
@@ -147,8 +165,8 @@ if __name__ == '__main__':
     #         y_true.extend(labels.cpu().numpy())
     #
     #     val_accuracy = num_correct / len(test_dataset)
-    #
-    #     print('Acc on test set:', val_accuracy)
+    #     print(f'{num_correct} - {len(test_dataset)}')
+    #     print('Acc on test set:', val_accuracy.item())
     #
     #     cm = confusion_matrix(y_true, y_pred)
     #     print("cm:\n", cm)

@@ -1,66 +1,26 @@
 # functions for cropping pedestrians and non-pedestrians in D3
-# Note: json files in D3 is very big, 1G
 
-import ijson
 import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from PIL import Image, ImageDraw
+from PIL import Image
 import random
 import numpy as np
 
 
-# Only use train.json is enough, got 45638 nonPed images
-# 获取不包含行人的图片，用于后续分割
-def get_nonPed_examples(json_path, nonPed_txt):
-    '''
-    :param json_path: path to train.json
-    :param nonPed_txt: path to save nonPed txt
-    :return:
-    '''
-    nonPed_num = 0
-    nonPed_list = []
-    personInclude_cls = ['rider', 'motor', 'person', 'bike']
-    with open(json_path) as f:
-        for record in tqdm(ijson.items(f, "item")):
-            nonPed_flag = True
-            object_list = record['labels']
-            for obj in object_list:
-                category = obj['category']
-                if category in personInclude_cls:
-                    nonPed_flag = False
-                    break
-            if nonPed_flag:
-                nonPed_num += 1
-                nonPed_list.append(record['name'])
-    print('num:', nonPed_num)
-    # print(nonPed_list)
-
-    with open(nonPed_txt, 'w') as f:
-        for item in nonPed_list:
-            msg = os.path.join('', item) + '\n'
-            f.write(msg)
-
-
-# json_path = r'D:\my_phd\dataset\D3_BDD\bdd100k\labels\bdd100k_labels_images_train.json'
-# nonPed_txt = r'D:\my_phd\dataset\D3_BDD\nonPed.txt'
-# get_nonPed_examples(json_path, nonPed_txt)
-
-# 分割非行人图片
+# 分割 non pedestrian images
 def crop_nonPeds(nonPed_txt, image_dir, save_to):
     with open(nonPed_txt) as f:
         data = f.readlines()
 
-    # for idx, item in enumerate(data):
-    for i in tqdm(range(7815)):
-        item = data[i]
+    for idx, item in enumerate(tqdm(data)):
+        item = data[idx]
         item = item.strip()
         image_path = os.path.join(image_dir, item)
         image = Image.open(image_path)
         w, h = image.size
-        # 由于这次的non Pedestrian数量很充足，每张图片裁剪出一张图就可以
-        is_ok = False
-        while not is_ok:
+        nonPed_num = 0
+        while nonPed_num < 16:
             x0 = random.randint(0, w - 250)
             y0 = random.randint(0, h - 250)
             cropped = image.crop((x0, y0, x0 + 250, y0 + 250))
@@ -72,17 +32,18 @@ def crop_nonPeds(nonPed_txt, image_dir, save_to):
             diff = gray_max - gray_min
             if diff > 0:
                 # plt.imshow(cropped)
+                # plt.title(nonPed_num)
                 # plt.show()
                 # 存储当前裁剪的图片
-                cropped_name = item.split('\\')[1]
+                cropped_name = item.split('\\')[1].split('.')[0] + '_' +str(nonPed_num) + '.png'
                 save_ptah = os.path.join(save_to, cropped_name)
                 cropped.save(save_ptah)
-                is_ok = True
+                nonPed_num += 1
 
 
-# nonPed_txt = r'D:\my_phd\dataset\D3_BDD\nonPed.txt'
-# image_dir = r'D:\my_phd\dataset\D3_BDD\bdd100k\images\100k'
-# save_to = r'D:\my_phd\dataset\D3_BDD\nonPedestrian'
+# nonPed_txt = r'D:\my_phd\dataset\D3_ECPNight\nonPed.txt'
+# image_dir = r'D:\my_phd\dataset\D3_ECPNight\ECP\night\img'
+# save_to = r'D:\my_phd\dataset\D3_ECPNight\nonPedestrian'
 # crop_nonPeds(nonPed_txt, image_dir, save_to)
 
 
@@ -121,18 +82,15 @@ def split_dataset(image_dir, txt_dir, cls_name, cls_code):
             f.write(msg)
 
 
-# # 划分 pedestrian
-# image_dir = r'D:\my_phd\dataset\D3_BDD\pedestrian'
-# txt_dir = r'D:\my_phd\dataset\D3_BDD\dataset_txt'
-# split_dataset(image_dir, txt_dir, 'pedestrian', '1')
+# 划分 non pedestrian
+image_dir = r'D:\my_phd\dataset\D3_ECPNight\nonPedestrian'
+txt_dir = r'D:\my_phd\dataset\D3_ECPNight\dataset_txt'
+split_dataset(image_dir, txt_dir, 'nonPedestrian', '0')
 
-# # 划分 non pedestrian
-# image_dir = r'D:\my_phd\dataset\D3_BDD\nonPedestrian'
-# txt_dir = r'D:\my_phd\dataset\D3_BDD\dataset_txt'
-# split_dataset(image_dir, txt_dir, 'nonPedestrian', '0')
-
-
-
+# 划分 pedestrian
+image_dir = r'D:\my_phd\dataset\D3_ECPNight\pedestrian'
+txt_dir = r'D:\my_phd\dataset\D3_ECPNight\dataset_txt'
+split_dataset(image_dir, txt_dir, 'pedestrian', '1')
 
 
 
