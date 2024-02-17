@@ -1,3 +1,6 @@
+# https://zhuanlan.zhihu.com/p/76893455  --> 讲解dataloader和sampler的关系
+
+
 import matplotlib.pyplot as plt
 import torch, os, cv2, argparse
 from torch.utils.data import Dataset, DataLoader
@@ -35,9 +38,7 @@ def get_image_transform(mode):
     else:
         return image_transform[: 3]
 
-
-
-
+# 用于不同尺寸图像的预处理
 
 class MyDataset(Dataset):
     def __init__(self, running_on, dataset_name, txt_name, transformer_mode=None, multinput=False):

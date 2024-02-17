@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import torch
 from torchvision import transforms
 import argparse
@@ -5,9 +6,47 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix
 import os
 from tqdm import tqdm
+import numpy as np
 
 from cv_models import DEVICE, LOCAL, vgg, CLOUD
 import dataset
+
+
+def collate_fn(batch):
+    images, labels, _ = zip(*batch)
+    # 将label转换为tensor
+    labels = [item for item in labels]
+    labels = np.array(labels).astype(np.int64)
+    labels = torch.from_numpy(labels)
+
+    image_sizes_orig = [[image.shape[-2], image.shape[-1]] for image in images]
+    # max_size = max([max(image_size[0], image_size[1]) for image_size in image_sizes_orig])
+
+    max_h = max([image_size[0] for image_size in image_sizes_orig])
+    max_w = max([image_size[1] for image_size in image_sizes_orig])
+
+    ## 构造批量形状 (batch_size, channel, max_size, max_size)
+    batch_shape = (len(batch), images[0].shape[0], max_h, max_w)
+
+    padded_images = images[0].new_full(batch_shape, 0.0)
+
+    # print('padded_images:', padded_images.shape)
+
+    for padded_img, img in zip(padded_images, images):
+        h, w = img.shape[1:]
+        padded_img[..., :h, :w].copy_(img)
+    # temp_image1 = transforms.ToPILImage()(padded_images[0])
+    # temp_image1.show()
+    #
+    # temp_image2 = transforms.ToPILImage()(padded_images[1])
+    # temp_image2.show()
+    #
+    # temp_image3 = transforms.ToPILImage()(padded_images[2])
+    # temp_image3.show()
+    #
+    # plt.show()
+    image_sizes_orig = torch.from_numpy(np.array(image_sizes_orig))
+    return padded_images, labels
 
 
 
@@ -30,7 +69,8 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
         running_loss = 0.0
 
         for batch, data in enumerate(tqdm(train_loader)):
-            images, labels, _ = data
+            # images, labels, _ = data
+            images, labels = data
 
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
@@ -105,7 +145,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
 
 if __name__ == '__main__':
-    BATCH_SIZE = 1
+    BATCH_SIZE = 64
     running_on = LOCAL
     dataset_name = 'D1_ECPDaytime'
     model = vgg.vgg16()
@@ -114,7 +154,7 @@ if __name__ == '__main__':
 
     # TODO 获取baseline的代码
     train_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='train.txt', transformer_mode=0)
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
 
     val_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='val.txt', transformer_mode=0)
     val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)

@@ -2,9 +2,10 @@
 Modified from https://github.com/pytorch/vision.git
 '''
 import math
-
 import torch.nn as nn
 import torch.nn.init as init
+
+from cv_models import SSP
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
@@ -16,7 +17,8 @@ class getFeatureSum(nn.Module):
         super(getFeatureSum, self).__init__(**kwargs)
 
     def forward(self, x):
-        return x.sum(axis=[2, 3], keepdim=False)
+        x = x[: , : 512]
+        return x
 
 
 class VGG(nn.Module):
@@ -26,22 +28,28 @@ class VGG(nn.Module):
     def __init__(self, features):
         super(VGG, self).__init__()
         self.features = features
-        self.classifier = nn.Sequential(
-            # nn.Dropout(),
-            nn.Conv2d(512, 2, 1),
-            nn.ReLU(),
-            getFeatureSum()
-        )
-
         # self.classifier = nn.Sequential(
-        #     nn.Dropout(),
-        #     nn.Linear(512*7*7, 512),
-        #     nn.ReLU(True),
-        #     nn.Dropout(),
-        #     nn.Linear(512, 512),
-        #     nn.ReLU(True),
-        #     nn.Linear(512, 2),
+        #     # nn.Dropout(),
+        #     # nn.Conv2d(512, 1024, 3),
+        #     # nn.ReLU(),
+        #     nn.Conv2d(512, 512, 1),
+        #     nn.ReLU(),
+        #     nn.Conv2d(512, 1024, 1),
+        #     nn.ReLU(),
+        #     nn.Conv2d(1024, 2, 1),
+        #
+        #     getFeatureSum()
         # )
+        self.spp_layer = SSP.SpatialPyramidPooling2d(1)
+        self.classifier = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(512, 512),
+            nn.ReLU(True),
+            nn.Dropout(),
+            nn.Linear(512, 512),
+            nn.ReLU(True),
+            nn.Linear(512, 2),
+        )
          # Initialize weights
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -53,6 +61,7 @@ class VGG(nn.Module):
     def forward(self, x):
         x = self.features(x)
         # x = x.view(x.size(0), -1)
+        x = self.spp_layer(x)
         x = self.classifier(x)
         return x
 
@@ -126,10 +135,10 @@ if __name__ == '__main__':
     from torchsummary import summary
     # model = vgg11()
     model = vgg16()
-    summary(model, (3, 224, 224))
+    summary(model, (3, 50, 100))
     # print(model)
-    # print('-' * 50)
-    # summary(model, (3, 320, 320))
+    print('-' * 50)
+    summary(model, (3, 320, 320))
 
 
 
