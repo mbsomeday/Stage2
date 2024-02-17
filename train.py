@@ -10,9 +10,10 @@ from cv_models import DEVICE, LOCAL, vgg, CLOUD
 import dataset
 
 
+
 def train(running_on, model, model_name, dataset_name, train_dataset, train_loader, val_dataset, val_loader):
     model = model.to(DEVICE)
-    EPOCHS = 100
+    EPOCHS = 50
     BEST_ACCURACY = -10.0
     WEIGHT_SAVE_PATH = running_on['weights_save_path']
 
@@ -21,6 +22,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
     print('Total training samples:', len(train_dataset))
     print('Total index samples:', len(train_loader))
+    print('Total EPOCH:', EPOCHS)
 
     for epoch in range(EPOCHS):
         print('-' * 30 + 'begin EPOCH ' + str(epoch + 1) + '-' * 30)
@@ -29,6 +31,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
         for batch, data in enumerate(tqdm(train_loader)):
             images, labels, _ = data
+
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
 
@@ -102,47 +105,48 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
 
 if __name__ == '__main__':
-    BATCH_SIZE = 64
+    BATCH_SIZE = 1
     running_on = LOCAL
+    dataset_name = 'D1_ECPDaytime'
     model = vgg.vgg16()
     # weights_path = r'D:\my_phd\Model_Weights\Stage2\D1_ECPDaytime\vgg-ECPDaytime-050-0.97701919.pth'
     # model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))
 
     # TODO 获取baseline的代码
-    # train_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='train.txt', transformer_mode=0)
-    # train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    #
-    # val_dataset = dataset.MyDataset(running_on, dataset_name='D3', txt_name='val.txt', transformer_mode=0)
-    # val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
-    #
-    # train(running_on=running_on,
-    #       model=model, model_name='vgg',
-    #       dataset_name='D3',
-    #       train_dataset=train_dataset,
-    #       train_loader=train_loader,
-    #       val_dataset=val_dataset,
-    #       val_loader=val_loader
-    #       )
+    train_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='train.txt', transformer_mode=0)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-    # TODO data diversity的代码
-    train_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='train.txt', transformer_mode=0)
-    train_loader = dataset.DataLoader(train_dataset, batch_size=1, shuffle=True)
-
-    val_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='val.txt', transformer_mode=0)
-    val_loader = dataset.DataLoader(val_dataset, batch_size=1, shuffle=False)
+    val_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='val.txt', transformer_mode=0)
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     train(running_on=running_on,
           model=model, model_name='vgg',
-          dataset_name='CityPersons_ECPNight',
+          dataset_name=dataset_name,
           train_dataset=train_dataset,
           train_loader=train_loader,
           val_dataset=val_dataset,
           val_loader=val_loader
           )
 
+    # # TODO data diversity的代码
+    # train_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='train.txt', transformer_mode=0)
+    # train_loader = dataset.DataLoader(train_dataset, batch_size=1, shuffle=True)
+    #
+    # val_dataset = dataset.DiversityDataset(LOCAL, dataset_name_list=['D3_ECPNight', 'D2_CityPersons'], txt_name='val.txt', transformer_mode=0)
+    # val_loader = dataset.DataLoader(val_dataset, batch_size=1, shuffle=False)
+    #
+    # train(running_on=running_on,
+    #       model=model, model_name='vgg',
+    #       dataset_name='CityPersons_ECPNight',
+    #       train_dataset=train_dataset,
+    #       train_loader=train_loader,
+    #       val_dataset=val_dataset,
+    #       val_loader=val_loader
+    #       )
 
 
-    # test_dataset = dataset.MyDataset(running_on, dataset_name='ECPNight', txt_name='test.txt', transformer_mode=0)
+    # # TODO baseline模型测试代码
+    # test_dataset = dataset.MyDataset(running_on, dataset_name='D2_CityPersons', txt_name='test.txt', transformer_mode=0)
     # test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False)
     #
     # model.eval()

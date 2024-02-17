@@ -15,7 +15,7 @@ def get_image_transform(mode):
     '''
     image_transform = [
         transforms.Compose([
-            transforms.Resize([224, 224]),  # [h, w])
+            # transforms.Resize([224, 224]),  # [h, w])
             transforms.ToTensor()
         ]),
         transforms.Compose([
@@ -36,6 +36,9 @@ def get_image_transform(mode):
         return image_transform[: 3]
 
 
+
+
+
 class MyDataset(Dataset):
     def __init__(self, running_on, dataset_name, txt_name, transformer_mode=None, multinput=False):
 
@@ -45,6 +48,7 @@ class MyDataset(Dataset):
         self.txt_name = txt_name
         self.multinput = multinput
         self.transformer_mode = -1 if multinput else transformer_mode
+        # print('mode:', self.transformer_mode)
         self.image_transformer = get_image_transform(self.transformer_mode)
 
         txt_path = os.path.join(self.txt_dir, txt_name)
@@ -68,9 +72,11 @@ class MyDataset(Dataset):
 
     def __getitem__(self, item):
         image_name = self.images[item]
+        # print(image_name)
         label = self.labels[item]
         label = np.array(label).astype(np.int64)
         img = Image.open(image_name)  # PIL image shape:（C, W, H）
+
         # 利用image对图像大小重新设置, Image.ANTIALIAS为高质量的
         # image = image.resize(size, Image.ANTIALIAS)
         if not self.multinput:

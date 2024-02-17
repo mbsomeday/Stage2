@@ -11,6 +11,13 @@ __all__ = [
     'vgg19_bn', 'vgg19',
 ]
 
+class getFeatureSum(nn.Module):
+    def __init__(self, **kwargs):
+        super(getFeatureSum, self).__init__(**kwargs)
+
+    def forward(self, x):
+        return x.sum(axis=[2, 3], keepdim=False)
+
 
 class VGG(nn.Module):
     '''
@@ -20,14 +27,21 @@ class VGG(nn.Module):
         super(VGG, self).__init__()
         self.features = features
         self.classifier = nn.Sequential(
-            nn.Dropout(),
-            nn.Linear(512*7*7, 512),
-            nn.ReLU(True),
-            nn.Dropout(),
-            nn.Linear(512, 512),
-            nn.ReLU(True),
-            nn.Linear(512, 2),
+            # nn.Dropout(),
+            nn.Conv2d(512, 2, 1),
+            nn.ReLU(),
+            getFeatureSum()
         )
+
+        # self.classifier = nn.Sequential(
+        #     nn.Dropout(),
+        #     nn.Linear(512*7*7, 512),
+        #     nn.ReLU(True),
+        #     nn.Dropout(),
+        #     nn.Linear(512, 512),
+        #     nn.ReLU(True),
+        #     nn.Linear(512, 2),
+        # )
          # Initialize weights
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -38,7 +52,7 @@ class VGG(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.view(x.size(0), -1)
+        # x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
 
@@ -111,8 +125,11 @@ def vgg19_bn():
 if __name__ == '__main__':
     from torchsummary import summary
     # model = vgg11()
-    model = vgg19()
+    model = vgg16()
     summary(model, (3, 224, 224))
+    # print(model)
+    # print('-' * 50)
+    # summary(model, (3, 320, 320))
 
 
 
