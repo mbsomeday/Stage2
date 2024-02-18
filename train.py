@@ -69,8 +69,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
         running_loss = 0.0
 
         for batch, data in enumerate(tqdm(train_loader)):
-            # images, labels, _ = data
-            images, labels = data
+            images, labels, _ = data
 
             images = images.to(DEVICE)
             labels = labels.to(DEVICE)
@@ -109,6 +108,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
             val_accuracy = num_correct / len(val_dataset)
             print('Val Loss:{:.6f}, accuracy:{:.10f}'.format(val_loss, val_accuracy))
+            print(f'{num_correct}/{len(val_dataset)}')
             print('*' * 50)
 
         # 如果模型表现效果好，则保存
@@ -154,10 +154,10 @@ if __name__ == '__main__':
 
     # TODO 获取baseline的代码
     train_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='train.txt', transformer_mode=0)
-    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=False, collate_fn=collate_fn)
+    train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=False)
 
     val_dataset = dataset.MyDataset(running_on, dataset_name=dataset_name, txt_name='val.txt', transformer_mode=0)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, pin_memory=True)
 
     train(running_on=running_on,
           model=model, model_name='vgg',

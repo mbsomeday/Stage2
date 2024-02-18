@@ -18,7 +18,7 @@ def get_image_transform(mode):
     '''
     image_transform = [
         transforms.Compose([
-            # transforms.Resize([224, 224]),  # [h, w])
+            transforms.Resize([224, 224]),  # [h, w])
             transforms.ToTensor()
         ]),
         transforms.Compose([

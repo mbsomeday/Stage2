@@ -28,19 +28,6 @@ class VGG(nn.Module):
     def __init__(self, features):
         super(VGG, self).__init__()
         self.features = features
-        # self.classifier = nn.Sequential(
-        #     # nn.Dropout(),
-        #     # nn.Conv2d(512, 1024, 3),
-        #     # nn.ReLU(),
-        #     nn.Conv2d(512, 512, 1),
-        #     nn.ReLU(),
-        #     nn.Conv2d(512, 1024, 1),
-        #     nn.ReLU(),
-        #     nn.Conv2d(1024, 2, 1),
-        #
-        #     getFeatureSum()
-        # )
-        self.spp_layer = SSP.SpatialPyramidPooling2d(1)
         self.classifier = nn.Sequential(
             nn.Dropout(),
             nn.Linear(512, 512),
@@ -60,8 +47,8 @@ class VGG(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        # x = x.view(x.size(0), -1)
-        x = self.spp_layer(x)
+        x = x.view(x.size(0), -1)
+        # x = self.spp_layer(x)
         x = self.classifier(x)
         return x
 
