@@ -5,7 +5,6 @@ import math
 import torch.nn as nn
 import torch.nn.init as init
 
-from cv_models import SSP
 
 __all__ = [
     'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
@@ -30,7 +29,7 @@ class VGG(nn.Module):
         self.features = features
         self.classifier = nn.Sequential(
             nn.Dropout(),
-            nn.Linear(512, 512),
+            nn.Linear(512*7*7, 512),
             nn.ReLU(True),
             nn.Dropout(),
             nn.Linear(512, 512),
@@ -48,7 +47,6 @@ class VGG(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = x.view(x.size(0), -1)
-        # x = self.spp_layer(x)
         x = self.classifier(x)
         return x
 

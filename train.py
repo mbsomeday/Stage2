@@ -84,7 +84,7 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
             running_loss += loss.item()
 
-            if (batch + 1) % 100 == 0:
+            if (batch + 1) % 10 == 0:
                 print('Training Epoch: %d, batch_idx:%5d, loss: %.8f' % (
                 epoch + 1, batch + 1, running_loss / images.shape[0]))
                 running_loss = 0.0
@@ -145,9 +145,9 @@ def train(running_on, model, model_name, dataset_name, train_dataset, train_load
 
 
 if __name__ == '__main__':
-    BATCH_SIZE = 64
+    BATCH_SIZE = 16
     running_on = LOCAL
-    dataset_name = 'D1_ECPDaytime'
+    dataset_name = 'D2_CityPersons'
     model = vgg.vgg16()
     # weights_path = r'D:\my_phd\Model_Weights\Stage2\D1_ECPDaytime\vgg-ECPDaytime-050-0.97701919.pth'
     # model.load_state_dict(torch.load(weights_path, map_location=torch.device(DEVICE)))

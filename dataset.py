@@ -62,7 +62,8 @@ class MyDataset(Dataset):
             line = line.strip()
             word = line.split()
             word_splits = word[0].split('\\')
-            images.append(os.path.join(self.base_dir, word_splits[0], word_splits[1]))
+            # images.append(os.path.join(self.base_dir, word_splits[0], word_splits[1]))
+            images.append(word[0])
             labels.append(word[2])
 
         self.images = images

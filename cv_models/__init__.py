@@ -21,11 +21,11 @@ LOCAL = {
     },
     'D3_ECPNight': {
         'base_dir': r'D:\my_phd\dataset\D3_ECPNight',
-        'image_dir': r'D:\my_phd\dataset\D3_ECPNight\bdd100k\images\100k',
+        'txt_dir': 'dataset_txt'
     },
     'D4_BDD100K': {
         'base_dir': r'D:\my_phd\dataset\D4_BDD100K',
-        'image_dir': r'D:\my_phd\dataset\D4_BDD100K\bdd100k\images\100k',
+        'txt_dir': 'dataset_txt'
     }
 }
 
